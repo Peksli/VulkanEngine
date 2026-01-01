@@ -9,8 +9,7 @@
 #include "VulkanAbstraction/Core/VulkanDebugger.h"
 
 
-namespace VulkanEngine 
-{
+namespace VulkanEngine {
 
     class VulkanContext
     {

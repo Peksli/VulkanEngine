@@ -4,7 +4,6 @@
 #include "Utility/Utility.h"
 
 #include <GLFW/glfw3.h>
-#include <vector>
 
 
 namespace VulkanEngine {

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "VulkanAbstraction/Core/VulkanContext.h"
+#include "VulkanAbstraction/VulkanSwapchain.h"
 #include "Window/Window.h"
 
 
-namespace VulkanEngine
-{
+namespace VulkanEngine {
 
 	struct ApplicationSpecification
 	{
@@ -27,9 +27,10 @@ namespace VulkanEngine
 		const std::unique_ptr<Window>&			GetWindow()		const { return m_Window;	}
 
 	private:
-		static Application*				s_Instance;
-		std::unique_ptr<Window>			m_Window;
-		std::unique_ptr<VulkanContext>	m_Context;
+		static Application*					s_Instance;
+		std::unique_ptr<Window>				m_Window;
+		std::unique_ptr<VulkanContext>		m_Context;
+		std::unique_ptr<VulkanSwapchain>	m_Swapchain;
 	};
 
 }

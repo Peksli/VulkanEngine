@@ -3,8 +3,7 @@
 #include "Core/LogSystem.h"
 
 
-namespace VulkanEngine 
-{
+namespace VulkanEngine  {
 
     VulkanContext* VulkanContext::s_Instance = nullptr;
 

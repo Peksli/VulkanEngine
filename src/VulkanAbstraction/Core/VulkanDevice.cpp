@@ -3,9 +3,6 @@
 #include "Core/LogSystem.h"
 #include "Utility/Utility.h"
 
-#include <set>
-#include <vector>
-
 
 namespace VulkanEngine {
 

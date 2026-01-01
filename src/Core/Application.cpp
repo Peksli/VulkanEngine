@@ -1,8 +1,8 @@
 #include "Core/Application.h"
 
 
-namespace VulkanEngine
-{
+namespace VulkanEngine {
+
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application(const ApplicationSpecification& spec)
@@ -20,10 +20,14 @@ namespace VulkanEngine
 
 		// Vulkan context
 		m_Context = std::make_unique<VulkanContext>();
+
+		// Vulkan swapchain
+		m_Swapchain = std::make_unique<VulkanSwapchain>();
 	}
 
 	Application::~Application()
 	{
+		m_Swapchain->Shutdown();
 		m_Context->Shutdown(); 
 		m_Window->Shutdown();
 	}
