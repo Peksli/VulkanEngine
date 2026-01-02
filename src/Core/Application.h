@@ -26,6 +26,7 @@ namespace VulkanEngine {
 
 		static Application* GetRaw() { return s_Instance; }
 		const std::unique_ptr<VulkanContext>&	GetContext()	const { return m_Context;	}
+		const std::unique_ptr<VulkanSwapchain>& GetSwapchain()	const { return m_Swapchain; }
 		const std::unique_ptr<Window>&			GetWindow()		const { return m_Window;	}
 
 	private:

@@ -109,12 +109,6 @@ namespace VulkanEngine {
             if (flags & VK_QUEUE_GRAPHICS_BIT)
                 indices.graphics = i;
 
-            // Transfer (Prefer dedicated transfer queue, distinct from graphics)
-            if ((flags & VK_QUEUE_TRANSFER_BIT) && !(flags & VK_QUEUE_GRAPHICS_BIT))
-            {
-                indices.transfer = i;
-            }
-
             // Presentation
             VkBool32 presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, *ctx->GetSurface(), &presentSupport);
@@ -123,12 +117,6 @@ namespace VulkanEngine {
 
             if (indices.IsComplete())
                 break;
-        }
-
-        // If no dedicated transfer queue found -> use the graphics queue
-        if (indices.transfer == -1 && indices.graphics != -1)
-        {
-            indices.transfer = indices.graphics;
         }
 
         return indices;

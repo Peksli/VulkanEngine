@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "Core/LogSystem.h"
+#include "VulkanAbstraction/VulkanRenderer.h"
 
 
 #define CHECK_VK_RES(res) \
@@ -14,3 +15,33 @@
         VulkanEngine_CRITICAL(fmt::runtime("Vulkan Validation Error: {0}"), string_VkResult(res)); \
         abort(); \
     }
+
+
+namespace VulkanEngine {
+
+    namespace VulkanUtils
+    {
+        // SYNC
+        VkSemaphoreSubmitInfo GetSemaphoreSubmitInfo(VkPipelineStageFlags2 stageMask, VkSemaphore semaphore);
+        VkFenceCreateInfo GetFenceCreateInfo(VkFenceCreateFlags flags = 0);
+        VkSemaphoreCreateInfo GetSemaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0);
+        void InsertImageMemoryBarrier(
+            VkCommandBuffer       cmdBuffer,    VkImage        image,
+            ImageState&           imageState,   // expands into srcAccess + stage
+            VkPipelineStageFlags2 dstStageMask, VkAccessFlags2 dstAccessMask,
+            VkImageLayout         newLayout);
+
+        // COMMAND BUFFER + POOL
+        VkCommandPoolCreateInfo GetCommandPoolInfo(VkCommandPoolCreateFlags flags = 0, uint32_t queueFamilyIndex = 0);
+        VkCommandBufferAllocateInfo GetCmdBufferAllocateInfo(VkCommandPool cmdPool, uint32_t cmdBufferCount);
+        VkCommandBufferBeginInfo GetBeginCmdBufferInfo(VkCommandBufferUsageFlags flags = 0);
+
+        // IMAGES
+        VkImageSubresourceRange GetImageSubresourceRange(VkImageAspectFlags aspect);
+        
+        // SUBMIT + PRESENT
+        VkCommandBufferSubmitInfo GetCommandBufferSubmitInfo(VkCommandBuffer cmd);
+        VkSubmitInfo2 GetSubmitInfo(VkCommandBufferSubmitInfo* cmd, VkSemaphoreSubmitInfo* signalSemaphoreInfo, VkSemaphoreSubmitInfo* waitSemaphoreInfo);
+    }
+
+}

@@ -15,10 +15,10 @@ namespace VulkanEngine {
 
 		// GLFW window
 		WindowSpecification winSpec;
-		winSpec.Width	= spec.width;
-		winSpec.Height	= spec.height;
-		winSpec.Title	= spec.windowName;
-		winSpec.Resizable = false;
+		winSpec.Width		= spec.width;
+		winSpec.Height		= spec.height;
+		winSpec.Title		= spec.windowName;
+		winSpec.Resizable	= false;
 
 		m_Window = std::make_unique<Window>(winSpec);
 
@@ -37,6 +37,9 @@ namespace VulkanEngine {
 		while (!m_Window->ShouldClose())
 		{
 			m_Window->OnUpdate();
+			m_Renderer->OpenRenderScope();
+			m_Renderer->Clear({ 1.0f, 0.0f, 0.0f });
+			m_Renderer->EndRenderScope();
 		}
 	}
 

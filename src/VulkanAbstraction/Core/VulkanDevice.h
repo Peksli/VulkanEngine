@@ -15,7 +15,6 @@ namespace VulkanEngine {
 
         VkDevice GetRaw()                const { return m_Device;               }
         VkQueue  GetGraphicsQueue()      const { return m_GraphicsQueue;        }
-        VkQueue  GetTransferQueue()      const { return m_TransferQueue;        }
         VkQueue  GetPresentationQueue()  const { return m_PresentationQueue;    }
 
         operator VkDevice() const { return m_Device; }
@@ -23,7 +22,6 @@ namespace VulkanEngine {
     private:
         VkDevice m_Device               = VK_NULL_HANDLE;
         VkQueue  m_GraphicsQueue        = VK_NULL_HANDLE;
-        VkQueue  m_TransferQueue        = VK_NULL_HANDLE;
         VkQueue  m_PresentationQueue    = VK_NULL_HANDLE;
     };
 

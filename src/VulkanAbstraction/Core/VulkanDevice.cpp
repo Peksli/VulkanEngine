@@ -16,7 +16,6 @@ namespace VulkanEngine {
         std::set<uint32_t> uniqueQueueFamilies =
         {
             physDevice.GetGraphicsFamily(),
-            physDevice.GetTransferFamily(),
             physDevice.GetPresentationFamily()
         };
 
@@ -64,7 +63,6 @@ namespace VulkanEngine {
 
         // Retrieve Queues
         vkGetDeviceQueue(m_Device, physDevice.GetGraphicsFamily(),      0,  &m_GraphicsQueue);
-        vkGetDeviceQueue(m_Device, physDevice.GetTransferFamily(),      0,  &m_TransferQueue);
         vkGetDeviceQueue(m_Device, physDevice.GetPresentationFamily(),  0,  &m_PresentationQueue);
     }
 

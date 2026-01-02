@@ -10,12 +10,11 @@ namespace VulkanEngine {
     struct QueueFamilyIndices
     {
         int32_t graphics        = -1;
-        int32_t transfer        = -1;
         int32_t presentation    = -1;
 
         bool IsComplete() const 
         {
-            return graphics > -1 && transfer > -1 && presentation > -1;
+            return graphics > -1 && presentation > -1;
         }
     };
 
@@ -29,7 +28,6 @@ namespace VulkanEngine {
         std::string           GetName() const;
 
         uint32_t GetGraphicsFamily()     const { return static_cast<uint32_t>(m_Indices.graphics); }
-        uint32_t GetTransferFamily()     const { return static_cast<uint32_t>(m_Indices.transfer); }
         uint32_t GetPresentationFamily() const { return static_cast<uint32_t>(m_Indices.presentation); }
 
         operator VkPhysicalDevice() const { return m_PhysicalDevice; }
