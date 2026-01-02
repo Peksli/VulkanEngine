@@ -2,6 +2,7 @@
 
 #include "VulkanAbstraction/Core/VulkanContext.h"
 #include "VulkanAbstraction/VulkanSwapchain.h"
+#include "VulkanAbstraction/VulkanRenderer.h"
 #include "Window/Window.h"
 
 
@@ -18,9 +19,10 @@ namespace VulkanEngine {
 	{
 	public:
 		Application(const ApplicationSpecification& spec);
-		virtual ~Application();
+		virtual ~Application() = default;
 
 		void Run();
+		void Shutdown();
 
 		static Application* GetRaw() { return s_Instance; }
 		const std::unique_ptr<VulkanContext>&	GetContext()	const { return m_Context;	}
@@ -31,6 +33,7 @@ namespace VulkanEngine {
 		std::unique_ptr<Window>				m_Window;
 		std::unique_ptr<VulkanContext>		m_Context;
 		std::unique_ptr<VulkanSwapchain>	m_Swapchain;
+		std::unique_ptr<VulkanRenderer>		m_Renderer;
 	};
 
 }

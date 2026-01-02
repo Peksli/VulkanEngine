@@ -39,15 +39,16 @@ namespace VulkanEngine {
 
 }
 
-#define VulkanEngine_TRACE(...)
-#define VulkanEngine_DEBUG(...)
-#define VulkanEngine_INFO(...)
-#define VulkanEngine_WARN(...)
-#define VulkanEngine_ERROR(...)
-#define VulkanEngine_CRITICAL(...)
 
-#define Client_TRACE(...)
-#define Client_DEBUG(...)
-#define Client_INFO(...)
-#define Client_WARN(...)
-#define Client_CRITICAL(...)
+#define VulkanEngine_TRACE(...)			  VulkanEngine::LogSystem::VulkanEngineTrace(__VA_ARGS__)
+#define VulkanEngine_DEBUG(...)			  VulkanEngine::LogSystem::VulkanEngineDebug(__VA_ARGS__)
+#define VulkanEngine_INFO(...)			  VulkanEngine::LogSystem::VulkanEngineInfo(__VA_ARGS__)
+#define VulkanEngine_WARN(...)			  VulkanEngine::LogSystem::VulkanEngineWarn(__VA_ARGS__)
+#define VulkanEngine_ERROR(...)			  VulkanEngine::LogSystem::VulkanEngineError(__VA_ARGS__)
+#define VulkanEngine_CRITICAL(...)		  VulkanEngine::LogSystem::VulkanEngineCritical(__VA_ARGS__)
+
+#define Client_TRACE(...)				  VulkanEngine::LogSystem::ClientTrace(__VA_ARGS__)
+#define Client_DEBUG(...)				  VulkanEngine::LogSystem::ClientDebug(__VA_ARGS__)
+#define Client_INFO(...)				  VulkanEngine::LogSystem::ClientInfo(__VA_ARGS__)
+#define Client_WARN(...)				  VulkanEngine::LogSystem::ClientWarn(__VA_ARGS__)
+#define Client_CRITICAL(...)			  VulkanEngine::LogSystem::ClientCritical(__VA_ARGS__)

@@ -18,11 +18,12 @@ namespace VulkanEngine {
     {
     public:
         Window(const WindowSpecification& spec);
-        virtual ~Window();
+        virtual ~Window() = default;
         Window(const Window&)               = delete;
         Window& operator=(const Window&)    = delete;
 
         void OnUpdate();
+        bool ShouldClose();
         void Shutdown();
 
         operator GLFWwindow* ()     const { return m_Window;        }

@@ -11,6 +11,8 @@ int main()
 	VulkanEngine::Application app(appSpec);
 
 	app.Run();
+	
+	app.Shutdown();
 
 	return 0;
 }

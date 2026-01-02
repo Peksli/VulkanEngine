@@ -15,16 +15,16 @@ namespace VulkanEngine {
         switch (severity)
         {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-            VulkanEngine_TRACE("[Diagnostic] {}", pCallbackData->pMessage);
+            VulkanEngine_TRACE(fmt::runtime("[Diagnostic] {}"), pCallbackData->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-            VulkanEngine_INFO("[Info] {}", pCallbackData->pMessage);
+            VulkanEngine_INFO(fmt::runtime("[Info] {}"), pCallbackData->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-            VulkanEngine_WARN("[Warning] {}", pCallbackData->pMessage);
+            VulkanEngine_WARN(fmt::runtime("[Warning] {}"), pCallbackData->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-            VulkanEngine_CRITICAL("[Error] {}", pCallbackData->pMessage);
+            VulkanEngine_CRITICAL(fmt::runtime("[Error] {}"), pCallbackData->pMessage);
             break;
         default:
             break;

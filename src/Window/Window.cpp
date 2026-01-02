@@ -7,7 +7,7 @@ namespace VulkanEngine {
 
     static void GLFWErrorCallback(int error, const char* description)
     {
-        VulkanEngine_CRITICAL("GLFW Error ({0}): {1}", error, description);
+        VulkanEngine_ERROR(fmt::runtime("GLFW Error ({0}): {1}"), error, description);
     }
 
     Window::Window(const WindowSpecification& spec)
@@ -16,14 +16,9 @@ namespace VulkanEngine {
         InitializeGLFW();
     }
 
-    Window::~Window()
-    {
-        Shutdown();
-    }
-
     void Window::InitializeGLFW()
     {
-        VulkanEngine_INFO("Creating Window: {0} ({1}x{2})", m_Spec.Title, m_Spec.Width, m_Spec.Height);
+        VulkanEngine_INFO(fmt::runtime("Creating Window: {0} ({1}x{2})"), m_Spec.Title, m_Spec.Width, m_Spec.Height);
 
         if (!glfwInit())
         {
@@ -69,6 +64,11 @@ namespace VulkanEngine {
     void Window::OnUpdate()
     {
         glfwPollEvents();
+    }
+
+    bool Window::ShouldClose()
+    {
+		return glfwWindowShouldClose(m_Window);
     }
 
 }
