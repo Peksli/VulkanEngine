@@ -10,13 +10,12 @@ namespace VulkanEngine {
 	{
 		s_Instance = this;
 
-		// Log system
 		LogSystem::Initialize();
 
 		// Lifetime manager
 		m_LifetimeManager = std::make_unique<LifetimeManager>();
 
-		// GLFW window
+		// Window
 		WindowSpecification winSpec;
 		winSpec.Width		= spec.width;
 		winSpec.Height		= spec.height;
@@ -25,14 +24,11 @@ namespace VulkanEngine {
 
 		m_Window = std::make_unique<Window>(winSpec);
 
-		// Vulkan context
-		m_Context = std::make_unique<VulkanContext>();
-
-		// Vulkan swapchain
+		// Vulkan specific
+		m_Context	= std::make_unique<VulkanContext>();
+		m_Allocator = std::make_unique<VulkanMemoryAllocator>();
 		m_Swapchain = std::make_unique<VulkanSwapchain>();
-
-		// Vulkan renderer
-		m_Renderer = std::make_unique<VulkanRenderer>();
+		m_Renderer	= std::make_unique<VulkanRenderer>();
 	}
 
 	void Application::Run()

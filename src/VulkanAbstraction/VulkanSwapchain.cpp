@@ -86,8 +86,8 @@ namespace VulkanEngine {
         auto* app = Application::GetRaw();
         for (const auto& img : m_Images)
         {
-            if (img.ImageView != VK_NULL_HANDLE)
-                app->GetLifetimeManager()->Push(vkDestroyImageView, device, img.ImageView, nullptr);
+            if (img.imageView != VK_NULL_HANDLE)
+                app->GetLifetimeManager()->Push(vkDestroyImageView, device, img.imageView, nullptr);
         }
 
         app->GetLifetimeManager()->Push(vkDestroySwapchainKHR, device, m_Swapchain, nullptr);
@@ -122,10 +122,15 @@ namespace VulkanEngine {
 
         for (size_t i = 0; i < count; ++i)
         {
-            m_Images[i].Image = rawImages[i];
+            // Set VkImage
+            m_Images[i].image = rawImages[i];
 
+            // Set VkImageView
             viewInfo.image = rawImages[i];
-            CHECK_VK_RES(vkCreateImageView(device, &viewInfo, nullptr, &m_Images[i].ImageView));
+            CHECK_VK_RES(vkCreateImageView(device, &viewInfo, nullptr, &m_Images[i].imageView));
+
+            // Set Extent
+            m_Images[i].imageExtent = { m_Extent.width, m_Extent.height, 1 };
         }
     }
 

@@ -120,6 +120,80 @@ namespace VulkanEngine {
 			return range;
 		}
 
+		VkImageCreateInfo GetImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usage)
+		{
+			VkImageCreateInfo imageInfo{ VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
+			imageInfo.pNext = nullptr;
+			imageInfo.flags = 0;
+			imageInfo.imageType = VK_IMAGE_TYPE_2D;
+			imageInfo.format = format;
+			imageInfo.extent = extent;
+			imageInfo.mipLevels = 1;
+			imageInfo.arrayLayers = 1;
+			imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+			imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+			imageInfo.usage = usage;
+			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			imageInfo.queueFamilyIndexCount = 0;
+			imageInfo.pQueueFamilyIndices = nullptr;
+			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+			return imageInfo;
+		}
+
+		VkImageViewCreateInfo GetImageViewCreateInfo(VkImage image, VkFormat format, VkImageAspectFlags aspectMask)
+		{
+			VkImageViewCreateInfo imageViewInfo{ VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
+			imageViewInfo.pNext = nullptr;
+			imageViewInfo.flags = 0;
+			imageViewInfo.image = image;
+			imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			imageViewInfo.format = format;
+			imageViewInfo.subresourceRange.aspectMask = aspectMask;
+			imageViewInfo.subresourceRange.baseArrayLayer = 0;
+			imageViewInfo.subresourceRange.baseMipLevel = 0;
+			imageViewInfo.subresourceRange.layerCount = 1;
+			imageViewInfo.subresourceRange.levelCount = 1;
+
+			return imageViewInfo;
+		}
+
+		// TRANSFER
+		void CopyImageToImage(VkCommandBuffer cmdBuffer, VkImage src, VkImage dst, VkExtent3D srcSize, VkExtent3D dstSize)
+		{
+			VkImageBlit2 blitRegion{ VK_STRUCTURE_TYPE_IMAGE_BLIT_2 };
+			blitRegion.pNext = nullptr;
+
+			blitRegion.srcOffsets[1].x = srcSize.width;
+			blitRegion.srcOffsets[1].y = srcSize.height;
+			blitRegion.srcOffsets[1].z = srcSize.depth;
+
+			blitRegion.dstOffsets[1].x = dstSize.width;
+			blitRegion.dstOffsets[1].y = dstSize.height;
+			blitRegion.dstOffsets[1].z = dstSize.depth;
+
+			blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blitRegion.srcSubresource.baseArrayLayer = 0;
+			blitRegion.srcSubresource.layerCount = 1;
+			blitRegion.srcSubresource.mipLevel = 0;
+
+			blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blitRegion.dstSubresource.baseArrayLayer = 0;
+			blitRegion.dstSubresource.layerCount = 1;
+			blitRegion.dstSubresource.mipLevel = 0;
+
+			VkBlitImageInfo2 blitInfo{ .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2, .pNext = nullptr };
+			blitInfo.dstImage = dst;
+			blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			blitInfo.srcImage = src;
+			blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			blitInfo.filter = VK_FILTER_LINEAR;
+			blitInfo.regionCount = 1;
+			blitInfo.pRegions = &blitRegion;
+
+			vkCmdBlitImage2(cmdBuffer, &blitInfo);
+		}
+
 		// SUBMIT + PRESENT
 		VkCommandBufferSubmitInfo GetCommandBufferSubmitInfo(VkCommandBuffer cmd)
 		{

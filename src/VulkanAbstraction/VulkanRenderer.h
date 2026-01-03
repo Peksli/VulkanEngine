@@ -5,26 +5,11 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "VulkanAbstraction/VulkanTypes.h"
+
 namespace VulkanEngine {
 
     static constexpr uint32_t FRAMES_IN_FLIGHT = 2;
-
-    struct Frame
-    {
-        VkCommandPool   commandPool{ VK_NULL_HANDLE };
-        VkCommandBuffer commandBuffer{ VK_NULL_HANDLE };
-        VkFence         renderFinishedFence{ VK_NULL_HANDLE };
-        VkSemaphore     imageAvailableSemaphore{ VK_NULL_HANDLE };
-
-        void Init(VkDevice device, uint32_t queueFamilyIndex);
-    };
-
-    struct ImageState
-    {
-        VkPipelineStageFlags2 currentStage = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
-        VkAccessFlags2        currentAccess = 0;
-        VkImageLayout         currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    };
 
     class VulkanRenderer
     {
@@ -42,14 +27,16 @@ namespace VulkanEngine {
     private:
         void InitFrames();
         void InitSemaphores(VkDevice device, size_t count);
-        void InitImageStates(size_t count);
+        void InitPreRenderTarget();
+        void SubmitAndPresent();
 
         void AdvanceFrame() { m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % FRAMES_IN_FLIGHT; }
 
     private:
         std::array<Frame, FRAMES_IN_FLIGHT> m_GraphicsFrames;
-        std::vector<VkSemaphore> m_RenderFinishedSemaphores;
-        std::vector<ImageState> m_ImagesState;
+        std::vector<VkSemaphore>    m_RenderFinishedSemaphores;
+
+        AllocatedImage m_PreRenderTarget; // will be copied into swapchain image
 
         uint32_t m_CurrentFrameIndex = 0;
         uint32_t m_CurrentImageIndex = 0;

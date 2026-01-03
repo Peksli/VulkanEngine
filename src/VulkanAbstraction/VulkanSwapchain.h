@@ -2,14 +2,17 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+#include "VulkanAbstraction/VulkanTypes.h"
 
 
 namespace VulkanEngine {
 
     struct SwapchainImage 
     {
-        VkImage     Image       = VK_NULL_HANDLE;
-        VkImageView ImageView   = VK_NULL_HANDLE;
+        ImageState  imageState;
+        VkImage     image       = VK_NULL_HANDLE;
+        VkImageView imageView   = VK_NULL_HANDLE;
+        VkExtent3D  imageExtent = { 0,0,0 };
     };
 
     class VulkanSwapchain

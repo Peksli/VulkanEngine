@@ -38,6 +38,11 @@ namespace VulkanEngine {
 
         // IMAGES
         VkImageSubresourceRange GetImageSubresourceRange(VkImageAspectFlags aspect);
+        VkImageCreateInfo GetImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usage);
+        VkImageViewCreateInfo GetImageViewCreateInfo(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
+
+        // TRANSFER
+        void CopyImageToImage(VkCommandBuffer cmdBuffer, VkImage src, VkImage dst, VkExtent3D srcSize, VkExtent3D dstSize);
         
         // SUBMIT + PRESENT
         VkCommandBufferSubmitInfo GetCommandBufferSubmitInfo(VkCommandBuffer cmd);

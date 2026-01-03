@@ -49,7 +49,7 @@ namespace VulkanEngine {
 
         InitSemaphores(device, imageCount);
         InitFrames();
-        InitImageStates(imageCount);
+        InitPreRenderTarget();
 
         // Deletor -> wait till all work done
         auto* app = Application::GetRaw();
@@ -87,15 +87,80 @@ namespace VulkanEngine {
         }
     }
 
-    void VulkanRenderer::InitImageStates(size_t count)
+    void VulkanRenderer::InitPreRenderTarget()
     {
-        m_ImagesState.resize(count);
-        for (auto& state : m_ImagesState)
-        {
-            state.currentStage = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
-            state.currentAccess = 0;
-            state.currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        }
+        auto* app = Application::GetRaw();
+        auto* ctx = VulkanContext::GetRaw();
+        VkDevice device = *ctx->GetDevice();
+
+        const auto& allocator = app->GetAllocator();
+
+        // PreRenderTarget creation
+        // Extent according to swapchain image
+        VkExtent3D extent = app->GetSwapchain()->GetImages()[0].imageExtent;
+        m_PreRenderTarget.extent = extent;
+
+        // Usage flags of image
+        VkImageUsageFlags usage{};
+        usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        usage |= VK_IMAGE_USAGE_STORAGE_BIT; // image can be used to create a VkImageView suitable for occupying a VkDescriptorSet slot of type VK_DESCRIPTOR_TYPE_STORAGE_IMAGE.
+        usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; 
+
+        // Image creation on VRAM
+        VkFormat hdrFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+        VkImageCreateInfo imageInfo = VulkanUtils::GetImageCreateInfo(hdrFormat, extent, usage);
+        m_PreRenderTarget.format = hdrFormat;
+
+        VmaAllocationCreateInfo allocationInfo{};
+        allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT; // dedicated mem block
+        allocationInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE; // VRAM allocation, cz no map flag set
+        allocator->AllocateImage(imageInfo, allocationInfo, &m_PreRenderTarget.image, &m_PreRenderTarget.allocation);
+
+        // Image view creation
+        VkImageViewCreateInfo imageViewInfo = VulkanUtils::GetImageViewCreateInfo(m_PreRenderTarget.image, hdrFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+        CHECK_VK_RES(vkCreateImageView(device, &imageViewInfo, nullptr, &m_PreRenderTarget.imageView));
+
+        // Deletor
+        app->GetLifetimeManager()->Push(vkDestroyImageView, device, m_PreRenderTarget.imageView, nullptr);
+        app->GetLifetimeManager()->Push(vmaDestroyImage, allocator->GetRaw(), m_PreRenderTarget.image, m_PreRenderTarget.allocation);
+    }
+
+    void VulkanRenderer::SubmitAndPresent()
+    {
+        auto* ctx = VulkanContext::GetRaw();
+        auto* app = Application::GetRaw();
+
+        VkCommandBuffer cmd = m_GraphicsFrames[m_CurrentFrameIndex].commandBuffer;
+
+        // Submit
+        VkCommandBufferSubmitInfo cmdInfo = VulkanUtils::GetCommandBufferSubmitInfo(cmd);
+
+        VkSemaphoreSubmitInfo waitInfo = VulkanUtils::GetSemaphoreSubmitInfo(
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+            m_GraphicsFrames[m_CurrentFrameIndex].imageAvailableSemaphore);
+
+        VkSemaphoreSubmitInfo signalInfo = VulkanUtils::GetSemaphoreSubmitInfo(
+            VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+            m_RenderFinishedSemaphores[m_CurrentImageIndex]);
+
+        VkSubmitInfo2 submitInfo = VulkanUtils::GetSubmitInfo(&cmdInfo, &signalInfo, &waitInfo);
+
+        CHECK_VK_RES(vkQueueSubmit2(ctx->GetDevice()->GetGraphicsQueue(), 1, &submitInfo, m_GraphicsFrames[m_CurrentFrameIndex].renderFinishedFence));
+
+        // Present
+        VkSwapchainKHR swapchain = Application::GetRaw()->GetSwapchain()->GetRaw();
+
+        VkPresentInfoKHR presentInfo{ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
+        presentInfo.pSwapchains = &swapchain;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_CurrentImageIndex];
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pImageIndices = &m_CurrentImageIndex;
+
+        CHECK_VK_RES(vkQueuePresentKHR(ctx->GetDevice()->GetPresentationQueue(), &presentInfo));
+
+        AdvanceFrame();
     }
 
     void VulkanRenderer::OpenRenderScope()
@@ -128,10 +193,9 @@ namespace VulkanEngine {
         VkCommandBuffer cmd = m_GraphicsFrames[m_CurrentFrameIndex].commandBuffer;
         auto& imageInfo = Application::GetRaw()->GetSwapchain()->GetImages()[m_CurrentImageIndex];
 
-        VulkanUtils::InsertImageMemoryBarrier(cmd, imageInfo.Image,
-            m_ImagesState[m_CurrentImageIndex],
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, 
-            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,        
+        VulkanUtils::InsertImageMemoryBarrier(cmd, m_PreRenderTarget.image,
+            m_PreRenderTarget.imageState,
+            VK_PIPELINE_STAGE_2_CLEAR_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);        
 
         VkClearColorValue clearValue;
@@ -139,49 +203,41 @@ namespace VulkanEngine {
 
         VkImageSubresourceRange range = VulkanUtils::GetImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
 
-        vkCmdClearColorImage(cmd, imageInfo.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &range);
+        vkCmdClearColorImage(cmd, m_PreRenderTarget.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &range);
     }
 
     void VulkanRenderer::EndRenderScope()
     {
         auto* ctx = VulkanContext::GetRaw();
-        VkCommandBuffer cmd = m_GraphicsFrames[m_CurrentFrameIndex].commandBuffer;
-        VkImage image = Application::GetRaw()->GetSwapchain()->GetImages()[m_CurrentImageIndex].Image;
+        auto* app = Application::GetRaw();
 
-        VulkanUtils::InsertImageMemoryBarrier(cmd, image,
-            m_ImagesState[m_CurrentImageIndex],
-            VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, 0, 
+        VkCommandBuffer cmd             = m_GraphicsFrames[m_CurrentFrameIndex].commandBuffer;
+        SwapchainImage  swapchainImage  = app->GetSwapchain()->GetImages()[m_CurrentImageIndex];
+
+        // Transfer pre render target to trasnfer src
+        VulkanUtils::InsertImageMemoryBarrier(cmd, m_PreRenderTarget.image,
+            m_PreRenderTarget.imageState,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_READ_BIT,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+        // Transfer swapchain image to transfer dst
+        VulkanUtils::InsertImageMemoryBarrier(cmd, swapchainImage.image,
+            swapchainImage.imageState,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+        // Blit
+        VulkanUtils::CopyImageToImage(cmd, m_PreRenderTarget.image, swapchainImage.image, m_PreRenderTarget.extent, swapchainImage.imageExtent);
+
+        // Transfer swapchain image to present
+        VulkanUtils::InsertImageMemoryBarrier(cmd, swapchainImage.image,
+            swapchainImage.imageState,
+            VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
         CHECK_VK_RES(vkEndCommandBuffer(cmd));
 
-        // SUBMIT
-        VkCommandBufferSubmitInfo cmdInfo = VulkanUtils::GetCommandBufferSubmitInfo(cmd);
-
-        VkSemaphoreSubmitInfo waitInfo = VulkanUtils::GetSemaphoreSubmitInfo(
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-            m_GraphicsFrames[m_CurrentFrameIndex].imageAvailableSemaphore);
-
-        VkSemaphoreSubmitInfo signalInfo = VulkanUtils::GetSemaphoreSubmitInfo(
-            VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
-            m_RenderFinishedSemaphores[m_CurrentImageIndex]); // Используем семафор, привязанный к картинке
-
-        VkSubmitInfo2 submitInfo = VulkanUtils::GetSubmitInfo(&cmdInfo, &signalInfo, &waitInfo);
-
-        CHECK_VK_RES(vkQueueSubmit2(ctx->GetDevice()->GetGraphicsQueue(), 1, &submitInfo, m_GraphicsFrames[m_CurrentFrameIndex].renderFinishedFence));
-
-        // PRESENT
-        VkSwapchainKHR swapchain = Application::GetRaw()->GetSwapchain()->GetRaw();
-
-        VkPresentInfoKHR presentInfo{ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
-        presentInfo.pSwapchains = &swapchain;
-        presentInfo.swapchainCount = 1;
-        presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_CurrentImageIndex];
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pImageIndices = &m_CurrentImageIndex;
-
-        CHECK_VK_RES(vkQueuePresentKHR(ctx->GetDevice()->GetPresentationQueue(), &presentInfo));
-
-        AdvanceFrame();
+        // Submit and present
+        SubmitAndPresent();
     }
 }
