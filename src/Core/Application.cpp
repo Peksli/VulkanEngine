@@ -13,6 +13,9 @@ namespace VulkanEngine {
 		// Log system
 		LogSystem::Initialize();
 
+		// Lifetime manager
+		m_LifetimeManager = std::make_unique<LifetimeManager>();
+
 		// GLFW window
 		WindowSpecification winSpec;
 		winSpec.Width		= spec.width;
@@ -45,10 +48,7 @@ namespace VulkanEngine {
 
 	void Application::Shutdown()
 	{
-		m_Renderer->Shutdown();
-		m_Swapchain->Shutdown();
-		m_Context->Shutdown();
-		m_Window->Shutdown();
+		m_LifetimeManager->Flush();
 	}
 
 }

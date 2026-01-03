@@ -13,8 +13,6 @@ namespace VulkanEngine {
         VulkanDebugger(const VulkanDebugger&)               = delete;
         VulkanDebugger& operator=(const VulkanDebugger&)    = delete;
 
-        void Shutdown();
-
         static VkDebugUtilsMessengerCreateInfoEXT GetDebugCreateInfo();
 
         VkDebugUtilsMessengerEXT GetRaw()   const { return m_Messenger; }

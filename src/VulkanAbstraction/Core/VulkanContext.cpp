@@ -27,12 +27,4 @@ namespace VulkanEngine  {
         s_Instance = nullptr;
     }
 
-    void VulkanContext::Shutdown()
-    {
-        m_Device->Shutdown();
-        m_Surface->Shutdown();
-        m_Debugger->Shutdown();
-        m_Instance->Shutdown();
-    }
-
 }

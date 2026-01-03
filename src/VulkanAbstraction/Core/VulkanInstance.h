@@ -14,8 +14,6 @@ namespace VulkanEngine {
         VulkanInstance(const VulkanInstance&)               = delete;
         VulkanInstance& operator=(const VulkanInstance&)    = delete;
 
-        void Shutdown();
-
         VkInstance GetRaw()     const { return m_Instance; }
         operator VkInstance()   const { return m_Instance; }
 

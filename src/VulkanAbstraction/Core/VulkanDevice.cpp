@@ -1,5 +1,6 @@
 #include "VulkanAbstraction/Core/VulkanDevice.h"
 #include "VulkanAbstraction/Core/VulkanContext.h"
+#include "Core/Application.h"
 #include "Core/LogSystem.h"
 #include "Utility/Utility.h"
 
@@ -64,14 +65,12 @@ namespace VulkanEngine {
         // Retrieve Queues
         vkGetDeviceQueue(m_Device, physDevice.GetGraphicsFamily(),      0,  &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, physDevice.GetPresentationFamily(),  0,  &m_PresentationQueue);
-    }
 
-    void VulkanDevice::Shutdown()
-    {
+        // Deletor
         if (m_Device != VK_NULL_HANDLE)
         {
-            vkDestroyDevice(m_Device, nullptr);
-            m_Device = VK_NULL_HANDLE;
+            auto* app = Application::GetRaw();
+            app->GetLifetimeManager()->Push(vkDestroyDevice, m_Device, nullptr);
         }
     }
 

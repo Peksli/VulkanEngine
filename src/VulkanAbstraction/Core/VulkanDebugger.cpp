@@ -1,5 +1,6 @@
 ﻿#include "VulkanAbstraction/Core/VulkanDebugger.h"
 #include "VulkanAbstraction/Core/VulkanContext.h"
+#include "Core/Application.h"
 #include "Core/LogSystem.h"
 #include "Utility/Utility.h"
 
@@ -55,21 +56,16 @@ namespace VulkanEngine {
         {
             VulkanEngine_WARN("Debug Utils extension not available. Debugger not created.");
         }
-    }
 
-    void VulkanDebugger::Shutdown()
-    {
-        auto* ctx = VulkanContext::GetRaw();
-        VkInstance instance = *ctx->GetInstance();
-
+        // Deletor
         if (m_Messenger != VK_NULL_HANDLE && instance != VK_NULL_HANDLE)
         {
             auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
             if (func != nullptr)
             {
-                func(instance, m_Messenger, nullptr);
+                auto* app = Application::GetRaw();
+                app->GetLifetimeManager()->Push(func, instance, m_Messenger, nullptr);
             }
-            m_Messenger = VK_NULL_HANDLE;
         }
     }
 

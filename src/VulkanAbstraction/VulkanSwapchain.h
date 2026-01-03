@@ -20,8 +20,6 @@ namespace VulkanEngine {
         VulkanSwapchain(const VulkanSwapchain&)             = delete;
         VulkanSwapchain& operator=(const VulkanSwapchain&)  = delete;
 
-        void Shutdown();
-
         VkSwapchainKHR  GetRaw()    const { return m_Swapchain; }
         VkFormat        GetFormat() const { return m_Format;    }
         VkExtent2D      GetExtent() const { return m_Extent;    }

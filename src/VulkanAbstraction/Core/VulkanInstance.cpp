@@ -1,5 +1,6 @@
 ﻿#include "VulkanAbstraction/Core/VulkanInstance.h"
 #include "VulkanAbstraction/Core/VulkanDebugger.h"
+#include "Core/Application.h"
 #include "Core/LogSystem.h"
 #include "Utility/Utility.h"
 
@@ -41,16 +42,10 @@ namespace VulkanEngine {
         CHECK_VK_RES(vkCreateInstance(&createInfo, nullptr, &m_Instance));
 
         VulkanEngine_INFO("Vulkan Instance created successfully");
-    }
 
-    void VulkanInstance::Shutdown()
-    {
-        if (m_Instance != VK_NULL_HANDLE)
-        {
-            vkDestroyInstance(m_Instance, nullptr);
-            m_Instance = VK_NULL_HANDLE;
-            VulkanEngine_INFO("Vulkan Instance destroyed");
-        }
+        // Deletor
+        auto* app = Application::GetRaw();
+        app->GetLifetimeManager()->Push(vkDestroyInstance, m_Instance, nullptr);
     }
 
     std::vector<const char*> VulkanInstance::GetRequiredExtensions() const

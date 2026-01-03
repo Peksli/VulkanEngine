@@ -81,24 +81,16 @@ namespace VulkanEngine {
 
         // Retrieve Images and Create Views
         InitImages();
-    }
 
-    void VulkanSwapchain::Shutdown()
-    {
-        if (m_Swapchain == VK_NULL_HANDLE) return;
-
-        VkDevice device = *VulkanContext::GetRaw()->GetDevice();
-
-        // Destroy views and swapchain
+        // Deletor
+        auto* app = Application::GetRaw();
         for (const auto& img : m_Images)
         {
             if (img.ImageView != VK_NULL_HANDLE)
-                vkDestroyImageView(device, img.ImageView, nullptr);
+                app->GetLifetimeManager()->Push(vkDestroyImageView, device, img.ImageView, nullptr);
         }
-        m_Images.clear();
 
-        vkDestroySwapchainKHR(device, m_Swapchain, nullptr);
-        m_Swapchain = VK_NULL_HANDLE;
+        app->GetLifetimeManager()->Push(vkDestroySwapchainKHR, device, m_Swapchain, nullptr);
     }
 
     void VulkanSwapchain::InitImages()

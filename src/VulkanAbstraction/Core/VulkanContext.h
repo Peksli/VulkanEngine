@@ -17,8 +17,6 @@ namespace VulkanEngine {
         VulkanContext();
         virtual ~VulkanContext();
 
-        void Shutdown();
-
         static VulkanContext* GetRaw() noexcept { return s_Instance; }
 
         const std::unique_ptr<VulkanDebugger>&          GetDebugger()       const noexcept { return m_Debugger;       }

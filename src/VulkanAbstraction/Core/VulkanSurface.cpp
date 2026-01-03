@@ -1,5 +1,6 @@
 ﻿#include "VulkanAbstraction/Core/VulkanSurface.h"
 #include "VulkanAbstraction/Core/VulkanContext.h"
+#include "Core/Application.h"
 #include "Core/LogSystem.h"
 #include "Utility/Utility.h"
 
@@ -26,19 +27,13 @@ namespace VulkanEngine {
 
         // Create
         CHECK_VK_RES(glfwCreateWindowSurface(instance, window, nullptr, &m_Surface));
-
         VulkanEngine_INFO("Vulkan Surface created");
-    }
 
-    void VulkanSurface::Shutdown()
-    {
-        auto* ctx = VulkanContext::GetRaw();
-        VkInstance instance = *ctx->GetInstance();
-
+        // Deletor
         if (m_Surface != VK_NULL_HANDLE && instance != VK_NULL_HANDLE)
         {
-            vkDestroySurfaceKHR(instance, m_Surface, nullptr);
-            m_Surface = VK_NULL_HANDLE;
+            auto* app = Application::GetRaw();
+            app->GetLifetimeManager()->Push(vkDestroySurfaceKHR, instance, m_Surface, nullptr);
         }
     }
 

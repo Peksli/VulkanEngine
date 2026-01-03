@@ -11,8 +11,6 @@ namespace VulkanEngine {
         VulkanDevice();
         virtual ~VulkanDevice() = default;
 
-        void Shutdown();
-
         VkDevice GetRaw()                const { return m_Device;               }
         VkQueue  GetGraphicsQueue()      const { return m_GraphicsQueue;        }
         VkQueue  GetPresentationQueue()  const { return m_PresentationQueue;    }

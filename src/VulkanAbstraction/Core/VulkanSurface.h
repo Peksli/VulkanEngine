@@ -14,8 +14,6 @@ namespace VulkanEngine {
         VulkanSurface(const VulkanSurface&)             = delete;
         VulkanSurface& operator=(const VulkanSurface&)  = delete;
 
-        void Shutdown();
-
         VkSurfaceKHR GetRaw()   const { return m_Surface; }
         operator VkSurfaceKHR() const { return m_Surface; }
 

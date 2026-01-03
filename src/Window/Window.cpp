@@ -1,4 +1,5 @@
 ﻿#include "Window.h"
+#include "Core/Application.h"
 #include "Core/LogSystem.h"
 #include "Utility/Utility.h"
 
@@ -47,18 +48,18 @@ namespace VulkanEngine {
         }
 
         glfwSetWindowUserPointer(m_Window, &m_Spec);
-    }
 
-    void Window::Shutdown()
-    {
+        // Deletor
+        auto* app = Application::GetRaw();
         if (m_Window)
         {
-            glfwDestroyWindow(m_Window);
-            m_Window = nullptr;
+            app->GetLifetimeManager()->PushFunction(glfwTerminate);
+            app->GetLifetimeManager()->Push(glfwDestroyWindow, m_Window);
         }
-
-        glfwTerminate();
-        VulkanEngine_INFO("GLFW Terminated");
+        else
+        {
+            VulkanEngine_ERROR("Failed to destroy glfw and window cz it's nullptr");
+        }
     }
 
     void Window::OnUpdate()
