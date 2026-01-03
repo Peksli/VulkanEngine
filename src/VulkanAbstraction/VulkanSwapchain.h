@@ -27,7 +27,7 @@ namespace VulkanEngine {
         VkFormat        GetFormat() const { return m_Format;    }
         VkExtent2D      GetExtent() const { return m_Extent;    }
 
-        const std::vector<SwapchainImage>& GetImages() const { return m_Images; }
+        std::vector<SwapchainImage>& GetImages() { return m_Images; }
 
     private:
         VkSurfaceFormatKHR ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats)  const;
